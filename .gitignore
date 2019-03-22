@@ -5,3 +5,6 @@
 /log/
 /state/
 *.iml
+venv/
+tests/regression/new_py*/
+tests/regression/orig_py*/

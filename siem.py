@@ -118,6 +118,9 @@ CEF_MAPPING = {
 
 # Initialize the SIEM_LOGGER
 SIEM_LOGGER = logging.getLogger('SIEM')
+SIEM_LOGGER.setLevel(logging.INFO)
+SIEM_LOGGER.propagate = False
+logging.basicConfig(format='%(message)s')
 
 
 def main():
@@ -200,7 +203,7 @@ def main():
         endpoint_config['address'] = cfg.address.strip()
         endpoint_config['socktype'] = cfg.socktype.strip()
 
-    configure_siem_logger(endpoint_config)
+    SIEM_LOGGER.addHandler(create_siem_log_handler(endpoint_config))
 
     for endpoint in tuple_endpoint:
         process_endpoint(endpoint, opener, endpoint_config, token)
@@ -244,10 +247,7 @@ def process_endpoint(endpoint, opener, endpoint_config, token):
         write_json_format(results)
 
 
-def configure_siem_logger(endpoint_config):
-    logging.basicConfig(format='%(message)s')
-    SIEM_LOGGER.setLevel(logging.INFO)
-    SIEM_LOGGER.propagate = False
+def create_siem_log_handler(endpoint_config):
     if endpoint_config['filename'] == 'syslog':
         facility = SYSLOG_FACILITY[endpoint_config['facility']]
         address = endpoint_config['address']
@@ -264,7 +264,7 @@ def configure_siem_logger(endpoint_config):
     else:
         logging_handler = logging. \
             FileHandler(os.path.join(endpoint_config['log_dir'], endpoint_config['filename']), 'a', encoding='utf-8')
-    SIEM_LOGGER.addHandler(logging_handler)
+    return logging_handler
 
 
 def write_json_format(results):
